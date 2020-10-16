@@ -11,6 +11,8 @@ library(shinyjs)
 # Define UI for application
 fluidPage(
     
+    tags$head(includeHTML(("www/ga.html"))),
+    
     # useShinyFeedback(), # include shinyFeedback
     
     # shinythemes::themeSelector(),
@@ -138,7 +140,8 @@ fluidPage(
     ),
     
     fluidRow(
-        style = "background-color:#eeeeee; text-align:center; padding:2rem; height:120px;",
+        class = "footer",
+        style = "background-color:#eeeeee; text-align:center; padding:2rem;",
         column(4),
         column(4,
                "The Swiss Tax Calculator is a project of",
