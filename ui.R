@@ -146,7 +146,9 @@ fluidPage(
                "to facilitate the tax declaration.
                No responsibility is taken on the accuracy of the information provided.",
                p("If you encounter any bug, please report it",
-                 tags$a("here.",  href="https://github.com/aledallas/ictax-app/issues")
+                 tags$a("here.",  href="https://github.com/aledallas/ictax-app/issues"), 
+                 "or",
+                 tags$a("reach out", href="mailto:aledallas@hotmail.it")
                ),
         ),
         column(4)
