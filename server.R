@@ -18,11 +18,11 @@ function(input, output, session) {
         # Import Degiro transactions data -----------------------------------------
         req(input$file1)
         degiro <- read_csv(input$file1$datapath) %>% 
-            rename(cur_price = "X7",
-                   cur_local_value = "X9",
-                   cur_value = "X11",
-                   cur_fee = "X14",
-                   cur_total = "X16")
+            rename(cur_price = "X9",
+                   cur_local_value = "X11",
+                   cur_value = "X13",
+                   cur_fee = "X16",
+                   cur_total = "X18")
         
         # positive feedback after upload
         # feedbackSuccess(
