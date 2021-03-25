@@ -51,9 +51,9 @@ function(input, output, session) {
         
         # Combine with dividends data ---------------------------------------------
         
-        # only used instruments
+        # pre-selection of instruments to subset with transactions <= reference year
         isin_list <- trans %>% 
-            filter(year(trans_date) == "2019") %>% 
+            filter(year(trans_date) <= "2019") %>% 
             select(isin) %>% 
             unique()
         
@@ -74,11 +74,28 @@ function(input, output, session) {
         
         # TODO for a next release, keep dividends with q = 0 to show them in a detail page
         
+        # restricting isin list to instr. in portfolio at the first dividend date of the considered year or at year end
+        isin_divdate <- div_trans %>% 
+            group_by(isin) %>% 
+            mutate(min_divdate = min(div_date)) %>% 
+            filter(div_date == min_divdate & cum_quantity > 0) %>% 
+            select(isin) %>% 
+            unique()
+        
+        isin_eoy <- trans %>% 
+            group_by(isin) %>% 
+            filter(year(trans_date) <= "2020" & cum_quantity > 0) %>% 
+            select(isin) %>% 
+            unique()
+        
+        upd_isin_list <- full_join(isin_divdate, isin_eoy)
+        
+        
         
         # Prepare data for the report ---------------------------------------------
         
         # fund info
-        rep_fund <- inner_join(fund, isin_list, by = "isin") %>% 
+        rep_fund <- inner_join(fund, upd_isin_list, by = "isin") %>% 
             mutate(fund_name = if_else(is.na(institutionappendix), institutionname, institutionappendix),
                    fund_type = if_else(securitytype == "FUND.ACCUMULATION", "ACC",
                                        if_else(securitytype == "FUND.DISTRIBUTION", "DIS",
@@ -94,7 +111,7 @@ function(input, output, session) {
             summarise(eoy_q = max(cum_quantity))
         
         # tax value
-        rep_taxvalue <- inner_join(yearend, isin_list, by = "isin") %>% 
+        rep_taxvalue <- inner_join(yearend, upd_isin_list, by = "isin") %>% 
             # rename(valornumber = "valorNumber") %>% 
             select(isin, taxvaluechf) %>% 
             mutate(taxvaluechf = as.numeric(taxvaluechf))
