@@ -108,7 +108,13 @@ function(input, output, session) {
         rep_trans_q <- trans %>% 
             filter(year(trans_date) == "2019") %>% 
             group_by(isin) %>%
-            summarise(eoy_q = max(cum_quantity))
+            mutate(max_date = max(trans_date)) %>%  # take the last transaction as ref
+            filter(trans_date == max_date) %>%
+            group_by(trans_date) %>%
+            mutate(max_time = max(time)) %>%        # if there are multiple trans, take the last one
+            filter(time == max_time) %>%
+            ungroup() %>% 
+            select(isin, eoy_q = cum_quantity)
         
         # tax value
         rep_taxvalue <- inner_join(yearend, upd_isin_list, by = "isin") %>% 
