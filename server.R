@@ -3,9 +3,12 @@ library(DT)
 library(tidyverse)
 library(lubridate)
 
-fund <- readRDS("data/fund_2020.rds")
-yearend <- readRDS("data/yearend_2020.rds")
-div <- readRDS("data/dividends_2020.rds")
+fund_2019 <- readRDS("data/fund_2019.rds")
+yearend_2019 <- readRDS("data/yearend_2019.rds")
+div_2019 <- readRDS("data/dividends_2019.rds")
+fund_2020 <- readRDS("data/fund_2020.rds")
+yearend_2020 <- readRDS("data/yearend_2020.rds")
+div_2020 <- readRDS("data/dividends_2020.rds")
 
 
 # Define server logic
@@ -18,7 +21,7 @@ function(input, output, session) {
         # Import Degiro transactions data -----------------------------------------
         req(input$file1)
         
-        read_csv(input$file1$datapath) %>% 
+        degiro <- read_csv(input$file1$datapath) %>% 
             rename(cur_price = "X9",
                    cur_local_value = "X11",
                    cur_value = "X13",
@@ -37,17 +40,32 @@ function(input, output, session) {
         #     session = shiny::getDefaultReactiveDomain()
         # )
         
-    })
-    
-    
-    df_detail <- reactive({
-        
         # cumulated quantity for degiro transactions
-        trans <- degiro_import() %>% 
+        degiro %>% 
             select(trans_date, time, product, isin, quantity) %>% 
             arrange(isin, trans_date) %>% 
             group_by(isin) %>% 
             mutate(cum_quantity = cumsum(quantity)) 
+        
+    })
+    
+
+    df_detail <- reactive({
+        
+        trans <- degiro_import()
+        
+        # This returns the correct dataset
+        
+        if (input$radio == "2019"){
+            fund <- fund_2019
+            yearend <- yearend_2019
+            div <- div_2019
+        }
+        else if (input$radio == "2020"){
+            fund <- fund_2020
+            yearend <- yearend_2020
+            div <- div_2020
+        }
         
         
         # Combine with dividends data ---------------------------------------------
@@ -66,21 +84,29 @@ function(input, output, session) {
             mutate(diff = div_date - trans_date) %>% 
             filter(diff > 0)    # exclude transactions happening on the same day of the dividends
 
-        div_trans <- trans_per_date %>% 
-            group_by(isin, div_date) %>% 
-            mutate(min_diff = min(diff)) %>% 
-            filter(diff == min_diff) %>% 
-            ungroup()
+        div_trans <- if (nrow(trans_per_date) == 0) {
+            trans_per_date      # creates df also if no dividends are found for reporting
+        } else {
+            trans_per_date %>%
+                group_by(isin, div_date) %>%
+                mutate(min_diff = min(diff)) %>%
+                filter(diff == min_diff) %>%
+                ungroup()
+        }
         
         # TODO for a next release, keep dividends with q = 0 to show them in a detail page
         
         # restricting isin list to instr. in portfolio at the first dividend date of the considered year or at year end
-        isin_divdate <- div_trans %>% 
-            group_by(isin) %>% 
-            mutate(min_divdate = min(div_date)) %>% 
-            filter(div_date == min_divdate & cum_quantity > 0) %>% 
-            select(isin) %>% 
-            unique()
+        isin_divdate <- if(nrow(div_trans) == 0) {
+            data.frame(isin = character())
+        } else {
+            div_trans %>%
+                group_by(isin) %>%
+                mutate(min_divdate = min(div_date)) %>%
+                filter(div_date == min_divdate & cum_quantity > 0) %>%
+                select(isin) %>%
+                unique()
+        }
         
         isin_eoy <- trans %>% 
             group_by(isin) %>% 
@@ -88,8 +114,9 @@ function(input, output, session) {
             select(isin) %>% 
             unique()
         
-        upd_isin_list <- full_join(isin_divdate, isin_eoy)
-        
+        upd_isin_list <- if (exists("isin_divdate")) {
+            full_join(isin_divdate, isin_eoy)
+        } else {isin_eoy}
         
         
         # Prepare data for the report ---------------------------------------------
