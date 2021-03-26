@@ -125,10 +125,10 @@ fluidPage(
                h3(textOutput("tbl_det_header")),
                DTOutput('tbl_det'),
                br(),
-               textOutput("info")
-               # br(),
-               # br(),
-               # textOutput("disclaimer")
+               textOutput("info"),
+               br(),
+               br(),
+               textOutput("disclaimer")
                # style = "font-size: 12pt"
         ),
         column(1)

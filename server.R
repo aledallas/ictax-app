@@ -213,12 +213,14 @@ function(input, output, session) {
 
     output$info <- renderText({
         req(input$file1)
-        "If you don't see your fund in the table above, it might not be listed on ICTax.
+        "Please note that values could differ from the Annual Report from DEGIRO due to different
+        closing prices and exchange rates. The values of the table above are based on ICTax information.
+        If you don't see your fund in the table above, it might not be listed on ICTax.
         In this case, you may want to request its entry to the Federal Tax Administration."})
 
-    # output$disclaimer <- renderText({
-    #     req(input$file1)
-    #     "Disclaimer: the tax calculator is a tool to support you in your tax declaration.
-    #     No responsibility is taken on the accuracy of the information provided."})
+    output$disclaimer <- renderText({
+        req(input$file1)
+        "Disclaimer: the tax calculator is a tool to support you in your tax declaration.
+        No responsibility is taken on the accuracy of the information provided."})
     
 }
