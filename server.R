@@ -13,16 +13,19 @@ function(input, output, session) {
     
     
     # Import and creation of detailed df ------------------------------------------
-    df_detail <- reactive({
+    degiro_import <- reactive({
         
         # Import Degiro transactions data -----------------------------------------
         req(input$file1)
-        degiro <- read_csv(input$file1$datapath) %>% 
+        
+        read_csv(input$file1$datapath) %>% 
             rename(cur_price = "X9",
                    cur_local_value = "X11",
                    cur_value = "X13",
                    cur_fee = "X16",
-                   cur_total = "X18")
+                   cur_total = "X18") %>% 
+            rename_with(tolower) %>% 
+            mutate(trans_date = dmy(date))
         
         # positive feedback after upload
         # feedbackSuccess(
@@ -34,16 +37,14 @@ function(input, output, session) {
         #     session = shiny::getDefaultReactiveDomain()
         # )
         
-        # Cumulated quantity per instruments as for degiro transactions -----------
+    })
+    
+    
+    df_detail <- reactive({
         
-        # clean and prepare
-        trans <- degiro %>% 
-            rename_with(tolower) %>% 
-            mutate(trans_date = dmy(date)) %>% 
-            select(trans_date, time, product, isin, quantity)
-        
-        # cumulated quantity
-        trans <- trans %>% 
+        # cumulated quantity for degiro transactions
+        trans <- degiro_import() %>% 
+            select(trans_date, time, product, isin, quantity) %>% 
             arrange(isin, trans_date) %>% 
             group_by(isin) %>% 
             mutate(cum_quantity = cumsum(quantity)) 
@@ -53,7 +54,7 @@ function(input, output, session) {
         
         # pre-selection of instruments to subset with transactions <= reference year
         isin_list <- trans %>% 
-            filter(year(trans_date) <= "2020") %>% 
+            filter(year(trans_date) <= input$radio) %>% 
             select(isin) %>% 
             unique()
         
@@ -83,7 +84,7 @@ function(input, output, session) {
         
         isin_eoy <- trans %>% 
             group_by(isin) %>% 
-            filter(year(trans_date) <= "2020" & cum_quantity > 0) %>% 
+            filter(year(trans_date) <= input$radio & cum_quantity > 0) %>% 
             select(isin) %>% 
             unique()
         
@@ -105,7 +106,7 @@ function(input, output, session) {
         
         # eoy quantity
         rep_trans_q <- trans %>% 
-            filter(year(trans_date) <= "2020") %>% 
+            filter(year(trans_date) <= input$radio) %>% 
             group_by(isin) %>%
             mutate(max_date = max(trans_date)) %>%  # take the last transaction as ref
             filter(trans_date == max_date) %>%

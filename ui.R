@@ -92,8 +92,8 @@ fluidPage(
         column(3,
                offset = 1,
                radioButtons("radio", label = h5("Choose Year"),
-                            choices = list("2020" = 1), 
-                            selected = 1)
+                            choices = list("2019", "2020"), 
+                            selected = 2020)
         ),
         column(5)
     ),
