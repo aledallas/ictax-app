@@ -92,7 +92,7 @@ fluidPage(
         column(3,
                offset = 1,
                radioButtons("radio", label = h5("Choose Year"),
-                            choices = list("2019" = 1), 
+                            choices = list("2020" = 1), 
                             selected = 1)
         ),
         column(5)
@@ -148,10 +148,10 @@ fluidPage(
                tags$a("@aledallas", href="https://github.com/aledallas"),
                "to facilitate the tax declaration.
                No responsibility is taken on the accuracy of the information provided.",
-               p("If you encounter any bug, please report it",
-                 tags$a("here.",  href="https://github.com/aledallas/ictax-app/issues"), 
+               p("If you encounter any bug or want to collaborate, please reach out",
+                 tags$a("via github",  href="https://github.com/aledallas/ictax-app/issues"), 
                  "or",
-                 tags$a("reach out", href="mailto:aledallas@hotmail.it")
+                 tags$a("email", href="mailto:aledallas@hotmail.it")
                ),
         ),
         column(4)

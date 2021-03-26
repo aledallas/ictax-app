@@ -3,9 +3,9 @@ library(DT)
 library(tidyverse)
 library(lubridate)
 
-fund <- readRDS("data/fund.rds")
-yearend <- readRDS("data/yearend.rds")
-div <- readRDS("data/dividends.rds")
+fund <- readRDS("data/fund_2020.rds")
+yearend <- readRDS("data/yearend_2020.rds")
+div <- readRDS("data/dividends_2020.rds")
 
 
 # Define server logic
@@ -53,7 +53,7 @@ function(input, output, session) {
         
         # pre-selection of instruments to subset with transactions <= reference year
         isin_list <- trans %>% 
-            filter(year(trans_date) <= "2019") %>% 
+            filter(year(trans_date) <= "2020") %>% 
             select(isin) %>% 
             unique()
         
@@ -64,8 +64,7 @@ function(input, output, session) {
         trans_per_date <- full_join(applied_div, trans, by = "isin") %>% 
             mutate(diff = div_date - trans_date) %>% 
             filter(diff > 0)    # exclude transactions happening on the same day of the dividends
-            # filter(year(trans_date) == "2019")
-        
+
         div_trans <- trans_per_date %>% 
             group_by(isin, div_date) %>% 
             mutate(min_diff = min(diff)) %>% 
@@ -106,7 +105,7 @@ function(input, output, session) {
         
         # eoy quantity
         rep_trans_q <- trans %>% 
-            filter(year(trans_date) == "2019") %>% 
+            filter(year(trans_date) <= "2020") %>% 
             group_by(isin) %>%
             mutate(max_date = max(trans_date)) %>%  # take the last transaction as ref
             filter(trans_date == max_date) %>%
