@@ -74,5 +74,5 @@ div <- payments %>%
 
 # save the data files
 saveRDS(fund, file = "data/fund_2020.rds")
-saveRDS(yearend, file = "app_v2/data/yearend_2020.rds")
-saveRDS(div, file = "app_v2/data/dividends_2020.rds")
+saveRDS(yearend, file = "data/yearend_2020.rds")
+saveRDS(div, file = "data/dividends_2020.rds")
